@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extrator NF-e — IBS & CBS</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app-shell">
+
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="logo-mark">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="28" height="28" rx="7" fill="#1a56db"/>
+            <path d="M7 8h9M7 12h14M7 16h11M7 20h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">Extrator NF-e</h1>
+          <p class="app-subtitle">IBS (vIBSUF) &amp; CBS (vCBS) por item</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-theme" id="btnTheme" onclick="toggleTheme()" title="Alternar tema">
+          <span class="icon-sun">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          </span>
+          <span class="icon-moon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </span>
+        </button>
+        <span class="app-badge">Reforma Tributária</span>
+      </div>
+    </header>
+
+    <main class="app-main">
+
+      <section class="card input-card">
+
+        <!-- Área de seleção de arquivo -->
+        <div class="file-drop-area" id="fileDropArea" onclick="document.getElementById('fileInput').click()">
+          <input
+            type="file"
+            id="fileInput"
+            accept=".xml,text/xml,application/xml"
+            style="display:none;"
+            onchange="carregarArquivo(event)"
+          />
+          <svg class="file-drop-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          <p class="file-drop-text" id="fileDropText">Clique para selecionar o arquivo XML da NF-e</p>
+          <p class="file-drop-hint">ou arraste e solte aqui</p>
+        </div>
+
+        <!-- Divisor -->
+        <div class="input-divider">
+          <span>ou cole o conteúdo abaixo</span>
+        </div>
+
+        <label class="field-label" for="xmlInput">XML da NF-e</label>
+        <textarea
+          id="xmlInput"
+          class="xml-textarea"
+          placeholder="Cole aqui o conteúdo completo do XML da NF-e..."
+          spellcheck="false"
+        ></textarea>
+        <div class="input-actions">
+          <button id="btnExtrair" class="btn btn-primary" onclick="extrair()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Extrair valores
+          </button>
+          <button class="btn btn-ghost" onclick="limpar()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+            Limpar
+          </button>
+        </div>
+      </section>
+
+      <div id="erro" class="alert alert-error" style="display:none;"></div>
+
+      <section id="resultado" style="display:none;">
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <span class="summary-label">Total de itens</span>
+            <span id="totalItens" class="summary-value">—</span>
+          </div>
+          <div class="summary-card accent-blue">
+            <span class="summary-label">Σ vIBSUF</span>
+            <span id="totalIBS" class="summary-value">—</span>
+          </div>
+          <div class="summary-card accent-green">
+            <span class="summary-label">Σ vCBS</span>
+            <span id="totalCBS" class="summary-value">—</span>
+          </div>
+          <div class="summary-card accent-dark">
+            <span class="summary-label">Σ IBS + CBS</span>
+            <span id="totalGeral" class="summary-value">—</span>
+          </div>
+        </div>
+
+        <div class="card table-card">
+          <div class="table-header">
+            <h2 class="table-title">Detalhamento por item</h2>
+            <div class="table-actions">
+              <button class="btn btn-ghost btn-sm" onclick="exportarXLSX()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar XLSX
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="copiarCSV()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copiar CSV
+              </button>
+              <span id="copiadoMsg" class="copied-msg" style="display:none;">✓ Copiado!</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="tabela">
+              <thead>
+                <tr>
+                  <th class="col-item">Item</th>
+                  <th class="col-nome">Produto</th>
+                  <th class="col-num">Base de Cálculo (vBC)</th>
+                  <th class="col-num col-ibs">vIBSUF</th>
+                  <th class="col-num col-cbs">vCBS</th>
+                  <th class="col-num">Total item</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+              <tfoot id="tfoot"></tfoot>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <div class="footer-info">Extrator NF-e · Reforma Tributária · IBS &amp; CBS</div>
+      <div class="footer-dev">
+        By <a href="https://github.com/GustavoMaxCardoso" target="_blank" rel="noopener noreferrer" class="footer-link">DevGustavoMaxCardoso</a>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- SheetJS para exportação XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
